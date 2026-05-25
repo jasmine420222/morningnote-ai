@@ -103,6 +103,105 @@ def list_available_sectors() -> list[str]:
     return list(SECTOR_TICKERS.keys())
 
 
+def parse_custom_tickers(ticker_input: str) -> list[str]:
+    """
+    Parse a comma-separated string of tickers entered by the user.
+
+    Cleans up spacing and converts to uppercase. Does not validate
+    whether the tickers actually exist — that happens when yfinance
+    is called in market_data.py.
+
+    Parameters
+    ----------
+    ticker_input : str
+        Raw user input, e.g. "tsla, aapl,  NVDA , msft"
+
+    Returns
+    -------
+    list[str]
+        Cleaned list, e.g. ["TSLA", "AAPL", "NVDA", "MSFT"]
+
+    Raises
+    ------
+    ValueError
+        If the input is empty or contains no valid tokens.
+
+    Example
+    -------
+    >>> parse_custom_tickers("tsla, aapl, nvda")
+    ['TSLA', 'AAPL', 'NVDA']
+    """
+    tickers = [t.strip().upper() for t in ticker_input.split(",") if t.strip()]
+    if not tickers:
+        raise ValueError(
+            "No tickers found. Please enter at least one ticker symbol, "
+            "e.g. 'TSLA, AAPL, NVDA'."
+        )
+    return tickers
+
+
+def build_ticker_list(
+    mode: str,
+    sector_name: str | None = None,
+    custom_input: str | None = None,
+) -> tuple[list[str], str]:
+    """
+    Build the final ticker list based on the selected mode.
+
+    Parameters
+    ----------
+    mode : str
+        One of: "sector", "custom", "mixed"
+    sector_name : str, optional
+        Required for "sector" and "mixed" modes.
+    custom_input : str, optional
+        Comma-separated tickers. Required for "custom" and "mixed" modes.
+
+    Returns
+    -------
+    tuple[list[str], str]
+        (tickers, label) where label is a display name for the note header.
+
+    Examples
+    --------
+    >>> build_ticker_list("sector", sector_name="Big Tech")
+    (['AAPL', 'MSFT', 'AMZN', 'META', 'NFLX'], 'Big Tech')
+
+    >>> build_ticker_list("custom", custom_input="TSLA, SPOT")
+    (['TSLA', 'SPOT'], 'Custom Portfolio')
+
+    >>> build_ticker_list("mixed", sector_name="Energy", custom_input="TSLA")
+    (['XOM', 'CVX', 'SHEL', 'TTE', 'COP', 'TSLA'], 'Energy + Custom')
+    """
+    if mode == "sector":
+        if not sector_name:
+            raise ValueError("sector_name is required for mode='sector'.")
+        tickers = get_tickers_for_sector(sector_name)
+        label = sector_name
+
+    elif mode == "custom":
+        if not custom_input:
+            raise ValueError("custom_input is required for mode='custom'.")
+        tickers = parse_custom_tickers(custom_input)
+        label = "Custom Portfolio"
+
+    elif mode == "mixed":
+        if not sector_name or not custom_input:
+            raise ValueError("Both sector_name and custom_input are required for mode='mixed'.")
+        sector_tickers = get_tickers_for_sector(sector_name)
+        extra_tickers  = parse_custom_tickers(custom_input)
+        # Merge, keeping sector tickers first, no duplicates
+        seen = set(sector_tickers)
+        combined = sector_tickers + [t for t in extra_tickers if t not in seen]
+        tickers = combined
+        label = f"{sector_name} + Custom"
+
+    else:
+        raise ValueError(f"Unknown mode '{mode}'. Choose: 'sector', 'custom', or 'mixed'.")
+
+    return tickers, label
+
+
 def get_sector_description(sector_name: str) -> str:
     """
     Return a short human-readable description of the sector's companies.
