@@ -1,0 +1,21 @@
+sector,ticker,company_name
+AI & Semiconductors,NVDA,Nvidia Corporation
+AI & Semiconductors,AMD,Advanced Micro Devices
+AI & Semiconductors,AVGO,Broadcom Inc.
+AI & Semiconductors,TSM,Taiwan Semiconductor Manufacturing
+AI & Semiconductors,ASML,ASML Holding N.V.
+Big Tech,AAPL,Apple Inc.
+Big Tech,MSFT,Microsoft Corporation
+Big Tech,GOOGL,Alphabet Inc.
+Big Tech,AMZN,Amazon.com Inc.
+Big Tech,META,Meta Platforms Inc.
+Banking,JPM,JPMorgan Chase & Co.
+Banking,BAC,Bank of America Corp.
+Banking,WFC,Wells Fargo & Company
+Banking,C,Citigroup Inc.
+Banking,GS,The Goldman Sachs Group
+Energy,XOM,Exxon Mobil Corporation
+Energy,CVX,Chevron Corporation
+Energy,COP,ConocoPhillips
+Energy,SLB,SLB (Schlumberger)
+Energy,EOG,EOG Resources Inc.

@@ -1,0 +1,5 @@
+model,claim,supported,evidence,notes
+Model A (GPT),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
+Model A (GPT),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
+Model B (Claude),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
+Model B (Claude),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],

@@ -1,0 +1,7 @@
+dimension,model_a_score,model_b_score,notes
+clarity,,,"Score 1-5: 1=poor, 5=excellent"
+financial_relevance,,,
+groundedness,,,
+conciseness,,,
+risk_awareness,,,
+usefulness,,,
