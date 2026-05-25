@@ -1,8 +1,7 @@
 # news_loader.py
 # Purpose: Fetch real company news headlines using NewsAPI.
-#
-# IMPORTANT: This module must raise a clear error if the API key is missing
-# or if the API call fails. It must NOT generate fake fallback news headlines.
+#          If the API fails (no key, quota exceeded, network error),
+#          automatically falls back to data/sample_news.csv.
 #
 # Requires: NEWSAPI_KEY in your .env file
 # Sign up at: https://newsapi.org/
@@ -20,14 +19,22 @@ load_dotenv()
 NEWS_LOOKBACK_DAYS = 3
 # Max articles per ticker
 MAX_ARTICLES_PER_TICKER = 5
+# Path to the local CSV backup
+CSV_BACKUP_PATH = "data/sample_news.csv"
 
 
 def load_news_for_tickers(
     tickers: list[str],
     lookback_days: int = NEWS_LOOKBACK_DAYS,
+    csv_path: str = CSV_BACKUP_PATH,
 ) -> pd.DataFrame:
     """
-    Fetch real news headlines for a list of tickers using NewsAPI.
+    Fetch real news headlines for a list of tickers.
+
+    Strategy:
+    1. Try NewsAPI first (live, real-time news).
+    2. On success, save results to csv_path so the CSV stays up to date.
+    3. If NewsAPI fails for any reason, fall back to the saved CSV.
 
     Parameters
     ----------
@@ -35,6 +42,8 @@ def load_news_for_tickers(
         List of ticker symbols (e.g., ["NVDA", "AMD"]).
     lookback_days : int
         How many calendar days back to search (default: 3).
+    csv_path : str
+        Path to the CSV backup file (default: data/sample_news.csv).
 
     Returns
     -------
@@ -44,21 +53,44 @@ def load_news_for_tickers(
 
     Raises
     ------
-    ValueError
-        If NEWSAPI_KEY is not set in environment variables.
     RuntimeError
-        If the NewsAPI request fails (non-200 response).
-
-    Example
-    -------
-    >>> news_df = load_news_for_tickers(["NVDA", "AMD"])
-    >>> print(news_df.head())
+        Only if BOTH NewsAPI AND the CSV fallback fail.
     """
+    # ── Try NewsAPI first ────────────────────────────────────────────────────
+    api_error_msg = None  # store error message before the except block clears it
+    try:
+        news_df = _fetch_from_newsapi(tickers, lookback_days)
+
+        # Save to CSV so the backup stays fresh
+        news_df.to_csv(csv_path, index=False)
+        print(f"[news_loader] Fetched {len(news_df)} articles from NewsAPI. Saved to {csv_path}.")
+        return news_df
+
+    except Exception as api_error:
+        api_error_msg = str(api_error)
+        print(f"[news_loader] NewsAPI failed: {api_error_msg}")
+        print(f"[news_loader] Falling back to saved CSV: {csv_path}")
+
+    # ── Fallback: load from CSV ──────────────────────────────────────────────
+    try:
+        return _load_from_csv(tickers, csv_path)
+    except Exception as csv_error:
+        raise RuntimeError(
+            f"Both NewsAPI and CSV fallback failed.\n"
+            f"  NewsAPI error: {api_error_msg}\n"
+            f"  CSV error: {csv_error}\n"
+            f"Fix: run the notebook once with a valid NEWSAPI_KEY to populate {csv_path}."
+        )
+
+
+# ── Private helpers ──────────────────────────────────────────────────────────
+
+def _fetch_from_newsapi(tickers: list[str], lookback_days: int) -> pd.DataFrame:
+    """Call NewsAPI and return a DataFrame. Raises on any failure."""
     api_key = os.getenv("NEWSAPI_KEY")
     if not api_key:
         raise ValueError(
-            "NEWSAPI_KEY is not set. "
-            "Add it to your .env file: NEWSAPI_KEY=your_key_here"
+            "NEWSAPI_KEY is not set. Add it to your .env file: NEWSAPI_KEY=your_key_here"
         )
 
     from_date = (datetime.today() - timedelta(days=lookback_days)).strftime("%Y-%m-%d")
@@ -67,8 +99,6 @@ def load_news_for_tickers(
     all_rows = []
 
     for ticker in tickers:
-        # Search using the ticker symbol as keyword
-        # NewsAPI /v2/everything endpoint
         url = "https://newsapi.org/v2/everything"
         params = {
             "q": ticker,
@@ -89,16 +119,14 @@ def load_news_for_tickers(
                 f"Message: {response.json().get('message', 'unknown error')}"
             )
 
-        data = response.json()
-        articles = data.get("articles", [])
-
+        articles = response.json().get("articles", [])
         if not articles:
             print(f"  [WARNING] No news found for {ticker} in the last {lookback_days} days.")
             continue
 
         for article in articles:
             all_rows.append({
-                "date": article.get("publishedAt", "")[:10],  # Keep only YYYY-MM-DD
+                "date": article.get("publishedAt", "")[:10],
                 "ticker": ticker,
                 "headline": article.get("title", ""),
                 "source": article.get("source", {}).get("name", ""),
@@ -106,16 +134,35 @@ def load_news_for_tickers(
             })
 
     if not all_rows:
-        raise ValueError(
-            f"No news articles found for any of the tickers: {tickers}. "
-            f"Try increasing lookback_days or check your API key."
-        )
+        raise ValueError(f"No news articles found for any of the tickers: {tickers}.")
 
     news_df = pd.DataFrame(all_rows, columns=["date", "ticker", "headline", "source", "url"])
     news_df = news_df.sort_values("date", ascending=False).reset_index(drop=True)
 
-    # Drop rows with empty headlines (sometimes NewsAPI returns [Removed] articles)
+    # Drop removed/empty articles (NewsAPI sometimes returns [Removed] placeholders)
     news_df = news_df[news_df["headline"].str.strip() != ""]
     news_df = news_df[~news_df["headline"].str.contains(r"\[Removed\]", na=False)]
 
     return news_df
+
+
+def _load_from_csv(tickers: list[str], csv_path: str) -> pd.DataFrame:
+    """Load news from local CSV and filter by ticker list. Raises if file missing or empty."""
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"CSV file not found: {csv_path}")
+
+    df = pd.read_csv(csv_path)
+
+    required_cols = {"date", "ticker", "headline", "source", "url"}
+    if not required_cols.issubset(df.columns):
+        raise ValueError(f"CSV is missing required columns. Expected: {required_cols}")
+
+    filtered = df[df["ticker"].isin(tickers)].copy()
+
+    if filtered.empty:
+        raise ValueError(
+            f"CSV exists but contains no rows for tickers: {tickers}. "
+            f"Run once with a valid NEWSAPI_KEY to populate the CSV."
+        )
+
+    return filtered.sort_values("date", ascending=False).reset_index(drop=True)
