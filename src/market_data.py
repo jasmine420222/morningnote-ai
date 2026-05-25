@@ -113,3 +113,147 @@ def format_market_data_for_prompt(market_df: pd.DataFrame) -> str:
             f"vol {vol_str})"
         )
     return "\n".join(lines)
+
+
+# ── Market Snapshot ──────────────────────────────────────────────────────────
+
+# Major indices, commodities, FX, and bonds available free via yfinance
+SNAPSHOT_TICKERS = {
+    # Equity indices
+    "S&P 500":       "^GSPC",
+    "Nasdaq":        "^IXIC",
+    "Dow Jones":     "^DJI",
+    "Russell 2000":  "^RUT",
+    "VIX":           "^VIX",
+    # Commodities
+    "WTI Oil":       "CL=F",
+    "Gold":          "GC=F",
+    # Crypto
+    "Bitcoin":       "BTC-USD",
+    # FX
+    "EUR/USD":       "EURUSD=X",
+    # Bonds
+    "10-Yr Yield":   "^TNX",
+}
+
+
+def get_market_snapshot() -> pd.DataFrame:
+    """
+    Fetch a broad market snapshot: indices, commodities, FX, and bonds.
+
+    This gives the AI context about the overall market environment,
+    not just the selected sector stocks.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: name, symbol, latest_price, pct_change
+
+    Example
+    -------
+    >>> snap = get_market_snapshot()
+    >>> print(snap)
+    """
+    rows = []
+    for name, symbol in SNAPSHOT_TICKERS.items():
+        try:
+            info = yf.Ticker(symbol).fast_info
+            latest = info.last_price
+            prev   = info.previous_close
+            if latest is None or prev is None:
+                continue
+            pct = round(((latest - prev) / prev) * 100, 2)
+            rows.append({
+                "name":         name,
+                "symbol":       symbol,
+                "latest_price": round(latest, 2),
+                "pct_change":   pct,
+            })
+        except Exception:
+            # Skip silently — snapshot is best-effort, not mission-critical
+            continue
+
+    return pd.DataFrame(rows, columns=["name", "symbol", "latest_price", "pct_change"])
+
+
+def format_snapshot_for_prompt(snapshot_df: pd.DataFrame) -> str:
+    """
+    Convert the market snapshot DataFrame into a readable string for the prompt.
+
+    Example output:
+        S&P 500  (^GSPC):  5,320.10  (-0.45%)
+        Nasdaq   (^IXIC):  16,780.23 (-0.82%)
+        VIX      (^VIX):   18.45     (+1.50%)
+    """
+    if snapshot_df.empty:
+        return "Market snapshot unavailable."
+    lines = []
+    for _, row in snapshot_df.iterrows():
+        sign = "+" if row["pct_change"] >= 0 else ""
+        lines.append(
+            f"{row['name']:<15} ({row['symbol']}): "
+            f"{row['latest_price']:>10,.2f}  "
+            f"({sign}{row['pct_change']:.2f}%)"
+        )
+    return "\n".join(lines)
+
+
+# ── Earnings Calendar ─────────────────────────────────────────────────────────
+
+def get_earnings_calendar(tickers: list[str]) -> pd.DataFrame:
+    """
+    Fetch the next scheduled earnings date for each ticker using yfinance.
+
+    This tells the AI (and the reader) which companies are reporting soon,
+    which is important context for interpreting price movements.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: ticker, earnings_date
+        'earnings_date' is a string like "2026-05-28" or "Unknown"
+
+    Example
+    -------
+    >>> cal = get_earnings_calendar(["NVDA", "AMD"])
+    >>> print(cal)
+    """
+    rows = []
+    for ticker in tickers:
+        try:
+            cal = yf.Ticker(ticker).calendar
+            # yfinance returns a dict; earnings date is under "Earnings Date"
+            if cal is not None and "Earnings Date" in cal:
+                date_val = cal["Earnings Date"]
+                # date_val can be a list or a single value
+                if isinstance(date_val, list) and len(date_val) > 0:
+                    date_str = str(date_val[0])[:10]
+                else:
+                    date_str = str(date_val)[:10]
+            else:
+                date_str = "Unknown"
+        except Exception:
+            date_str = "Unknown"
+
+        rows.append({"ticker": ticker, "earnings_date": date_str})
+
+    return pd.DataFrame(rows, columns=["ticker", "earnings_date"])
+
+
+def format_earnings_for_prompt(earnings_df: pd.DataFrame) -> str:
+    """
+    Convert the earnings calendar into a readable string for the prompt.
+
+    Example output:
+        NVDA: earnings on 2026-05-28
+        AMD:  earnings date unknown
+    """
+    if earnings_df.empty:
+        return "Earnings calendar unavailable."
+    lines = []
+    for _, row in earnings_df.iterrows():
+        if row["earnings_date"] == "Unknown":
+            lines.append(f"{row['ticker']}: earnings date unknown")
+        else:
+            lines.append(f"{row['ticker']}: next earnings on {row['earnings_date']}")
+    return "\n".join(lines)

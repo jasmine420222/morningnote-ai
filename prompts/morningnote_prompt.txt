@@ -6,38 +6,57 @@ The user is interested in:
 The selected tickers are:
 {tickers}
 
-Market data (from yfinance, as of today):
+--- BROAD MARKET SNAPSHOT ---
+(Indices, commodities, FX, and bonds as of today)
+{snapshot_data}
+
+--- SECTOR STOCK DATA ---
+(Real prices from yfinance as of today)
 {market_data}
 
-Company news (from verified sources):
+--- UPCOMING EARNINGS DATES ---
+{earnings_data}
+
+--- COMPANY NEWS ---
+(Headlines from verified sources, last 3 days)
 {news_data}
 
 Instructions:
-- Use only the provided market data and news. Do not use outside knowledge about prices or events.
-- Do not invent facts.
+- Use only the data provided above. Do not use outside knowledge about prices or events.
+- Do not invent facts, prices, or news.
 - Do not make unsupported causal claims.
-- If a stock moved but the reason is not clear from the news, say that the evidence is limited.
-- Use cautious language such as "the move coincided with" instead of "the move was caused by" unless the source clearly supports causality.
-- If evidence is limited, explicitly say so.
-- This is not investment advice. Do not recommend buying or selling any security.
+- If a stock moved but the reason is not clear from the news, say the evidence is limited.
+- Use cautious language: "the move coincided with" not "the move was caused by."
+- If evidence is limited, say so explicitly.
+- This is not investment advice. Do not recommend buying or selling.
 - Be concise, structured, and useful for a morning briefing.
 
 Write a structured morning note with the following sections:
 
-## 1. Market Overview
-A brief summary of the overall market context for this sector today.
+## TL;DR
+One sentence summarizing the single most important thing happening in this sector today.
 
-## 2. Sector Summary
-How is this sector performing as a whole? What are the key themes?
+## 1. Broad Market Context
+Based on the snapshot data, briefly describe the macro backdrop (indices direction, VIX level, commodities, dollar strength). Keep to 2-3 sentences.
 
-## 3. Company-Specific Notes
-For each ticker, write 2-3 sentences covering: price move, relevant news, and any caveats about causality.
+## 2. Sector Overview
+How is this sector performing as a whole today? What is the dominant theme? Which stocks are leading and which are lagging?
 
-## 4. Key Risks
-What are the main risks or uncertainties an investor in this sector should be aware of today?
+## 3. Stock Snapshot
+For each ticker, one concise line:
+TICKER: price, % change — one-sentence observation (cite news if available, flag if no catalyst found)
 
-## 5. What to Watch Today
-What events, announcements, or data releases should the reader monitor?
+## 4. Earnings Watch
+Based on the earnings dates provided, flag any upcoming earnings that could move stocks this week. If no earnings are imminent, say so.
 
-## 6. Confidence and Limitations
-Be honest about what the data does and does not support. Flag any claims where the evidence is thin.
+## 5. Key Themes from the News
+Identify 2-4 recurring themes across the news headlines. For each theme, name the relevant tickers and describe the potential impact. Use cautious language.
+
+## 6. Risk Radar
+List 3-5 specific risks relevant to this sector today. For each risk, indicate which tickers are most exposed.
+
+## 7. What to Watch
+3-5 bullet points: specific events, data releases, or price levels to monitor today.
+
+## 8. Confidence & Limitations
+Be honest about what the data supports and where evidence is thin. Flag any sections where you had to speculate due to limited news.
