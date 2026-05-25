@@ -57,6 +57,7 @@ def load_news_for_tickers(
         Only if BOTH NewsAPI AND the CSV fallback fail.
     """
     # ── Try NewsAPI first ────────────────────────────────────────────────────
+    api_error_msg = None  # store error message before the except block clears it
     try:
         news_df = _fetch_from_newsapi(tickers, lookback_days)
 
@@ -66,7 +67,8 @@ def load_news_for_tickers(
         return news_df
 
     except Exception as api_error:
-        print(f"[news_loader] NewsAPI failed: {api_error}")
+        api_error_msg = str(api_error)
+        print(f"[news_loader] NewsAPI failed: {api_error_msg}")
         print(f"[news_loader] Falling back to saved CSV: {csv_path}")
 
     # ── Fallback: load from CSV ──────────────────────────────────────────────
@@ -75,7 +77,7 @@ def load_news_for_tickers(
     except Exception as csv_error:
         raise RuntimeError(
             f"Both NewsAPI and CSV fallback failed.\n"
-            f"  NewsAPI error: {api_error}\n"
+            f"  NewsAPI error: {api_error_msg}\n"
             f"  CSV error: {csv_error}\n"
             f"Fix: run the notebook once with a valid NEWSAPI_KEY to populate {csv_path}."
         )
