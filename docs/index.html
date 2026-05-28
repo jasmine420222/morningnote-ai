@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MorningNote AI — Project Writeup</title>
+<style>
+  :root {
+    --navy:#0A1628; --ink:#1a2b3c; --mute:#5b6b7b; --gold:#b8860b;
+    --line:#e3e8ee; --panel:#f6f8fa; --up:#1a7f5a; --accent:#0A1628;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    margin:0; background:#fbfcfd; color:var(--ink);
+    font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  .hero {
+    background:linear-gradient(135deg,#0A1628 0%,#13263D 100%);
+    color:#fff; padding:48px 24px 40px; border-bottom:4px solid var(--gold);
+  }
+  .hero .wrap { max-width:860px; margin:0 auto; }
+  .hero h1 { margin:0; font-size:2.2rem; letter-spacing:.3px; }
+  .hero h1 .tick { color:var(--gold); }
+  .hero p { margin:.6rem 0 0; color:#aebfd0; font-size:1.02rem; }
+  .hero .badge {
+    display:inline-block; margin-top:16px; padding:4px 12px; font-size:.74rem;
+    letter-spacing:.5px; color:var(--gold); border:1px solid #6b5a1f; border-radius:5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  main { max-width:860px; margin:0 auto; padding:8px 24px 80px; }
+  h2 {
+    margin:2.4rem 0 .8rem; padding-bottom:.35rem; font-size:1.5rem; color:var(--navy);
+    border-bottom:2px solid var(--gold);
+  }
+  h3 { margin:1.6rem 0 .5rem; font-size:1.12rem; color:var(--accent); }
+  p { margin:.7rem 0; }
+  a { color:#0b6bcb; }
+  hr { border:none; border-top:1px solid var(--line); margin:2.4rem 0; }
+  code {
+    background:var(--panel); padding:.12em .4em; border-radius:4px; font-size:.9em;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  pre {
+    background:#0d1b2a; color:#e6edf3; padding:16px 18px; border-radius:8px;
+    overflow:auto; font-size:.86rem; line-height:1.5;
+  }
+  pre code { background:none; padding:0; color:inherit; }
+  table {
+    width:100%; border-collapse:collapse; margin:1.1rem 0; font-size:.94rem;
+    box-shadow:0 1px 2px rgba(10,22,40,.06); border-radius:8px; overflow:hidden;
+  }
+  th,td { padding:9px 12px; border:1px solid var(--line); text-align:left; }
+  th { background:var(--navy); color:#fff; font-weight:600; }
+  tr:nth-child(even) td { background:var(--panel); }
+  blockquote {
+    margin:1rem 0; padding:.5rem 1rem; border-left:3px solid var(--gold);
+    background:var(--panel); color:var(--mute);
+  }
+  ul,ol { padding-left:1.4rem; }
+  li { margin:.25rem 0; }
+  em { color:var(--mute); }
+  footer { max-width:860px; margin:0 auto; padding:24px; color:var(--mute);
+    font-size:.85rem; border-top:1px solid var(--line); }
+</style>
+</head>
+<body>
+  <div class="hero"><div class="wrap">
+    <h1><span class="tick">&#9650;</span> MorningNote&nbsp;AI</h1>
+    <p>Personalized AI financial morning briefings &mdash; real market data, real headlines, two models compared.</p>
+    <span class="badge">PROJECT WRITEUP &middot; NOT INVESTMENT ADVICE</span>
+  </div></div>
+  <main>
+<h1 id="morningnote-ai-project-writeup">MorningNote AI — Project Writeup</h1>
+<p><em>Course: Generative AI for Finance</em>
+<em>Due: May 27, 2026</em></p>
+<hr />
+<h2 id="1-project-summary">1. Project Summary</h2>
+<p>MorningNote AI is a prototype AI tool that generates personalized financial morning notes
+for equity watchlists. Instead of manually searching for tickers and reading scattered
+headlines, a user selects a sector of interest and the system automatically builds a watchlist,
+fetches real market data, and generates a structured morning briefing using two different LLMs.</p>
+<p>We then compare the two models' output on a six-dimension rubric and fact-check selected claims
+against the source data, so the project is as much an evaluation of <em>whether</em> generative AI helps
+in this workflow as it is a working demo.</p>
+<hr />
+<h2 id="2-motivation-and-problem">2. Motivation and Problem</h2>
+<p>Financial news is noisy and fragmented. A retail investor, finance student, or junior analyst
+who follows a particular theme — say AI semiconductors or big tech — typically has to open many
+tabs every morning: one for prices, several for headlines, another for the earnings calendar, and
+then mentally stitch it all into a view of "what matters today." This is repetitive, easy to do
+inconsistently, and time-consuming before the market even opens.</p>
+<p>The user problem we target is: <em>"I know what sector I care about, but I don't want to manually
+search every ticker, read all the news, and organize everything into a clear morning note."</em> Our
+goal is <strong>not</strong> a trading or recommendation system. It is to test whether a grounded LLM workflow
+can turn raw market data and real headlines into a structured, useful, and honestly-hedged
+briefing — and to show, through evaluation, where that AI adds value and where it still needs
+human review.</p>
+<hr />
+<h2 id="3-design-decisions">3. Design Decisions</h2>
+<h3 id="why-sector-based-selection-instead-of-manual-ticker-entry">Why sector-based selection instead of manual ticker entry?</h3>
+<p>Our original proposal had the user type in tickers every day. Based on teaching-team feedback we
+redesigned the entry point around <em>interests</em> rather than <em>symbols</em>: the user picks a sector
+(e.g. "AI &amp; Semiconductors") and the system maps it to a curated five-name watchlist. This is
+closer to how people actually think about the market ("I follow chips"), removes daily friction,
+and still leaves room for a custom or mixed watchlist for power users. The sector→ticker map is a
+<strong>product rule</strong>, not synthetic data — the prices and news behind it remain real.</p>
+<h3 id="why-yfinance-for-market-data">Why yfinance for market data?</h3>
+<p><code>yfinance</code> gives free, reproducible access to real prices, previous closes, percent changes, and
+volume with no API key. We considered WRDS/Compustat/CRSP, which are higher quality, but for a
+user-facing morning briefing the core need is recent price action, not academic-grade panels.
+yfinance is simpler to run and to grade. Crucially, our loader <strong>raises a clear error rather than
+inventing fake prices</strong> if data is missing — grounding integrity over convenience.</p>
+<h3 id="why-a-saved-csv-for-news-instead-of-a-live-news-api">Why a saved CSV for news instead of a live news API?</h3>
+<p>We use a dual strategy: NewsAPI when a key is present, with an automatic fallback to a curated
+<code>data/sample_news.csv</code> of ~360 real headlines. The saved CSV makes the project <strong>reproducible
+during grading</strong> (it does not depend on a live key or rate limits) while still using real news.
+All evaluation in this writeup was run against the curated CSV so the results are reproducible.</p>
+<h3 id="why-compare-two-models">Why compare two models?</h3>
+<p>Comparing one model to itself tells you little. Running the <strong>same prompt</strong> through two different
+model families (OpenAI vs Anthropic) lets us ask a more useful question: do model choices
+materially change the quality of a financial briefing, and in which dimensions? It also forces an
+explicit evaluation rubric instead of an informal "looks good to me."</p>
+<hr />
+<h2 id="4-system-architecture">4. System Architecture</h2>
+<p>The pipeline is a linear, inspectable flow; each stage is one small module in <code>src/</code>:</p>
+<pre><code>sector_mapping.py    user's sector/custom choice  →  ticker watchlist
+        ↓
+market_data.py       yfinance  →  prices, % change, volume
+                               →  broad market snapshot (indices, commodities, FX, rates)
+                               →  earnings calendar
+        ↓
+news_loader.py       NewsAPI (live)  →  fallback to data/sample_news.csv  →  headlines for tickers
+        ↓
+prompt_builder.py    assemble all of the above into one grounded prompt (prompts/morningnote_prompt.txt)
+        ↓
+model_runner.py      run_openai_model() and run_anthropic_model() on the SAME prompt
+        ↓
+outputs/             model_a_morning_note.md, model_b_morning_note.md, baseline_note.md
+        ↓
+evaluator.py         model_comparison.csv, fact_check_table.csv  (filled by a human reviewer)
+</code></pre>
+<p>The same flow is exposed two ways: the <code>morningnote_demo.ipynb</code> notebook (step-by-step) and a
+Streamlit app (<code>app.py</code>) with sector / custom / mixed watchlist modes. API keys are read from a
+<code>.env</code> file via environment variables and are never hard-coded.</p>
+<hr />
+<h2 id="5-data-sources">5. Data Sources</h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>What it provides</th>
+<th>How we use it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>yfinance</td>
+<td>Real stock prices, % change, volume; index/commodity/FX/rate snapshot; earnings dates</td>
+<td>Market-data, snapshot, and earnings sections of the prompt</td>
+</tr>
+<tr>
+<td>data/sample_news.csv</td>
+<td>~360 real news headlines (date, ticker, headline, source, url)</td>
+<td>News section of the prompt; the reproducible fallback when no live key is set</td>
+</tr>
+<tr>
+<td>NewsAPI (optional)</td>
+<td>Live headlines when <code>NEWSAPI_KEY</code> is set</td>
+<td>Primary news source; results refresh the CSV</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-prompt-design">6. Prompt Design</h2>
+<p>The prompt (<code>prompts/morningnote_prompt.txt</code>) injects the sector, ticker list, market snapshot,
+per-stock data, earnings calendar, and recent headlines, then asks for a fixed eight-section
+note: <strong>TL;DR, Broad Market Context, Sector Overview, Stock Snapshot, Earnings Watch, Key Themes,
+Risk Radar, What to Watch, and Confidence &amp; Limitations</strong>.</p>
+<p>The instructions are deliberately anti-hallucination:</p>
+<ul>
+<li>Use <strong>only</strong> the provided data; do not invent facts.</li>
+<li>Do not make unsupported causal claims; prefer "the move coincided with…" over "was caused by…".</li>
+<li>If a move has no clear driver in the news, <strong>say the evidence is limited</strong>.</li>
+<li>No buy/sell recommendations; this is not investment advice.</li>
+</ul>
+<p>The fixed section structure also acts as a guardrail: it keeps both models on-task and makes the
+two outputs directly comparable section-by-section.</p>
+<p><strong>Fair-comparison note.</strong> Because the experiment hinges on a fair comparison, both models receive
+the identical prompt <strong>and</strong> the same generation settings: <code>temperature=0.3</code> for both, with an
+output budget large enough for the full eight sections (we initially capped Anthropic at 1024
+tokens, which truncated Claude's note mid-way; we raised it to 2048 and aligned temperature so the
+only intended difference is the model itself).</p>
+<hr />
+<h2 id="7-model-comparison-results">7. Model Comparison Results</h2>
+<p>We compared <strong>Model A — OpenAI <code>gpt-4o-mini</code></strong> against <strong>Model B — Anthropic
+<code>claude-haiku-4-5-20251001</code></strong> on the same "AI &amp; Semiconductors" watchlist (NVDA, GOOGL, MSFT, AMD,
+AVGO), same prompt, same data. A human reviewer scored each note 1–5 on six dimensions.</p>
+<h3 id="quantitative-comparison">Quantitative Comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th style="text-align: center;">Model A (GPT-4o-mini)</th>
+<th style="text-align: center;">Model B (Claude Haiku)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clarity</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">4</td>
+</tr>
+<tr>
+<td>Financial relevance</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td>Groundedness</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td>Conciseness</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr>
+<td>Risk awareness</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td>Usefulness</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: center;"><strong>25</strong></td>
+<td style="text-align: center;"><strong>27</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="qualitative-observations">Qualitative Observations</h3>
+<p>The two models have clearly different "personalities" on the identical prompt:</p>
+<ul>
+<li><strong>GPT-4o-mini is the better quick read.</strong> It is concise (~3.1k characters), scannable, and
+  faster to digest — it wins clarity and conciseness, and is the better fit when speed is the
+  priority.</li>
+<li><strong>Claude Haiku is more thorough.</strong> It is roughly twice as long (~6.7k characters), cites
+  specific named headlines (e.g. BofA's "ignore the noise" on NVDA, the Vera-CPU story on AMD),
+  includes trading volume and price levels, and — most distinctively — separates fact from
+  inference with explicit <strong>High / Medium / Low confidence tiers</strong> and a closing disclaimer. This
+  drives its wins on financial relevance, groundedness, risk awareness, and usefulness.</li>
+</ul>
+<p>The most interesting result is the <strong>gap between the mechanical score and the holistic judgment</strong>.
+The six-dimension totals are nearly tied (25 vs 27). On reflection the reviewer preferred Claude
+overall because, for this use case, information richness and traceable grounding outweighed
+brevity — even though Claude scored <em>lower</em> on conciseness. In other words, the rubric and the
+"which would I actually use" verdict can diverge, and the extra dimension that tipped the decision
+was the <em>value weighting</em>, not any single score. GPT remains the better choice when the priority
+is a fast morning scan.</p>
+<hr />
+<h2 id="8-fact-check-results">8. Fact-Check Results</h2>
+<p>We extracted six concrete claims (two from GPT, four from Claude) and checked each against the two
+source datasets — the yfinance market data and the news CSV. Full table:
+<code>outputs/fact_check_table.csv</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Claim</th>
+<th style="text-align: center;">Supported?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT</td>
+<td>AMD made a $10B Taiwan AI-infrastructure investment</td>
+<td style="text-align: center;"><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>GPT</td>
+<td>NVDA gaining "amid discussions about its potential in China"</td>
+<td style="text-align: center;"><strong>Partial</strong></td>
+</tr>
+<tr>
+<td>Claude</td>
+<td>NVDA traded on 186.5M shares of volume</td>
+<td style="text-align: center;"><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Claude</td>
+<td>NVIDIA's "Vera" CPUs may have weighed on AMD today</td>
+<td style="text-align: center;"><strong>Partial</strong></td>
+</tr>
+<tr>
+<td>Claude</td>
+<td>Bill Ackman's $2.1B investment relates to MSFT</td>
+<td style="text-align: center;"><strong>Partial</strong></td>
+</tr>
+<tr>
+<td>Claude</td>
+<td>Paul Tudor Jones made an $8B bet on small-cap chaos</td>
+<td style="text-align: center;"><strong>Yes</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key finding.</strong> Both models are <strong>factually accurate on the hard numbers</strong> — prices, percent
+changes, trading volume, and dollar amounts all matched the source data exactly (the three "Yes"
+claims). Every "Partial" is the same failure mode: a real headline and a real price move both
+exist, but the model <strong>links them as cause-and-effect (or as a specific association) when the data
+only shows co-occurrence</strong>. To both models' credit, these inferences are hedged ("may have
+weighed", "(limited evidence)"), which is why we scored them Partial rather than No — but the
+pattern is exactly the causality risk the prompt warns against.</p>
+<hr />
+<h2 id="9-baseline-vs-ai-comparison">9. Baseline vs AI Comparison</h2>
+<p>The non-AI baseline (<code>outputs/baseline_note.md</code>) simply dumps the raw inputs: the sector, the
+tickers, the price table, the earnings calendar, and the list of headlines. It is complete and
+100% faithful to the data, but it is <strong>just data</strong> — the reader still has to do all the synthesis.</p>
+<p>The AI notes add value precisely in that synthesis layer: they group the five names into
+leaders/laggards, connect headlines to themes, surface a risk radar, and frame everything in
+cautious language with a confidence statement. For a human skimming before the open, that
+organization is a real improvement over raw headlines. The trade-off is that the AI introduces the
+causal-attribution risk documented in §8, which the baseline — by saying nothing — cannot. The
+honest conclusion: <strong>AI improves readability and structure, but the baseline is "safer" precisely
+because it never interprets.</strong> That is the case for keeping a human in the loop.</p>
+<hr />
+<h2 id="10-failure-case">10. Failure Case</h2>
+<p>The clearest failure case comes from the higher-rated model, Claude. In its MSFT snapshot it wrote
+that <strong>"Bill Ackman's $2.1B investment"</strong> was relevant to Microsoft. The underlying headline reads:
+<em>"Billionaire Bill Ackman Pours $2,092,970,000 Into One Asset, Dumps Uber and Two Mag 7 Stocks."</em></p>
+<p>Two things are notable:</p>
+<ol>
+<li>The <strong>dollar figure is correct</strong> — $2.1B is an accurate rounding of $2,092,970,000. The model
+   handled the number well.</li>
+<li>But the asset is explicitly <strong>unnamed</strong> ("One Asset"), and the headline even mentions <em>dumping</em>
+   two "Mag 7" stocks. By placing this item under MSFT, the model implies an association — Ackman
+   buying <em>into</em> Microsoft — that the source does not support and arguably contradicts.</li>
+</ol>
+<p>This is a subtle and instructive failure: not a fabricated number, but an <strong>unsupported
+association</strong> presented with quiet confidence inside an otherwise well-grounded note. It is more
+dangerous than an obvious error because it reads as authoritative. The same pattern appears in the
+NVDA/China and Vera-CPU/AMD claims (§8). It is the central reason the project insists on human
+review for any investment-facing content, and why a model that is <em>more</em> detailed (and scores
+higher overall) can also create <em>more</em> surface area for this kind of mistake.</p>
+<hr />
+<h2 id="11-limitations">11. Limitations</h2>
+<ol>
+<li>The sector-to-ticker mapping is manually curated.</li>
+<li>The tool does not connect to the user's real portfolio.</li>
+<li>The news CSV may not capture every important market event.</li>
+<li>LLMs may overstate causality between price movements and news (see §8 and §10).</li>
+<li>This prototype covers 10 sectors with 5 companies each.</li>
+<li>The evaluation is based on a single watchlist on a single day, scored by one reviewer — the
+   numbers are illustrative, not statistically robust.</li>
+<li>Human review is still needed for investment-facing content.</li>
+</ol>
+<hr />
+<h2 id="12-what-we-would-improve-with-more-time">12. What We Would Improve with More Time</h2>
+<ul>
+<li>Run the comparison across multiple sectors and several days, with more than one reviewer, to
+  make the scores statistically meaningful.</li>
+<li>Add a lightweight automated fact-check pass that flags causal language unsupported by the data,
+  turning §8 from manual into semi-automated.</li>
+<li>Pull in SEC filings, earnings transcripts, and macro data for richer grounding.</li>
+<li>Let the model cite the specific headline/row behind each claim, so every statement is traceable.</li>
+<li>Use WRDS/Compustat/CRSP to build sector watchlists dynamically by market cap or fundamentals
+  rather than from a hand-curated map.</li>
+</ul>
+<hr />
+<h2 id="13-conclusion">13. Conclusion</h2>
+<p>A grounded, structured prompt running over real market data and real headlines does produce a
+genuinely useful morning briefing — more readable and better organized than a raw data dump, and
+factually reliable on the hard numbers. The two models trade off along a clear axis: GPT-4o-mini
+is the concise quick-read, Claude Haiku is the thorough, risk-aware, better-grounded note, and on
+balance we preferred Claude for this use case. But the evaluation also exposed a consistent
+weakness — turning correlation into causation/association — that the better model is, if anything,
+more prone to because it says more. The practical takeaway is that generative AI is a strong
+<em>drafting and synthesis</em> tool for this workflow, but the final judgment, especially on causal and
+attributive claims, still belongs to a human.</p>
+<hr />
+<p><em>This is not investment advice.</em></p>
+  </main>
+  <footer>Generated from <code>docs/writeup.md</code>. View the source notebook and code in the project repository.</footer>
+</body>
+</html>

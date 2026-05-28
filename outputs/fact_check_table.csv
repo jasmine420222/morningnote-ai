@@ -1,5 +1,7 @@
 model,claim,supported,evidence,notes
-Model A (GPT),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
-Model A (GPT),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
-Model B (Claude),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
-Model B (Claude),[Claim extracted from model output],[Yes/Partial/No],[Source from market data or news CSV],
+Model A (GPT),"AMD made a recent $10B investment in Taiwan AI infrastructure",Yes,"news CSV 2026-05-23: 'AMD Announces $10B Investment in Taiwan AI Infrastructure'","Amount and fact match the headline verbatim."
+Model A (GPT),"NVDA is gaining amid discussions about its potential in China",Partial,"news CSV has an NVDA/China headline; market data confirms NVDA +0.42%","The China headline and the price gain both exist, but linking them is the model's inference; GPT hedges with '(limited evidence)', so Partial rather than No."
+Model B (Claude),"NVDA traded on volume of 186.5M shares",Yes,"market data: NVDA volume = 186,505,600","Rounded figure matches the provided market data exactly."
+Model B (Claude),"NVIDIA's 'Vera' CPUs may have weighed on AMD today (-0.84%)",Partial,"news CSV 2026-05-23: 'NVIDIA's Vera CPUs could outperform... Intel and AMD'; market data AMD -0.84%","The headline and the decline both exist, but attributing today's drop to the Vera story is an inference; Claude hedges with 'may have weighed', so Partial."
+Model B (Claude),"Bill Ackman's $2.1B investment relates to MSFT",Partial,"news CSV 2026-05-23: 'Bill Ackman Pours $2,092,970,000 Into One Asset...'","The $2.1B figure is correct (≈$2,092,970,000), but the headline says 'One Asset' (unnamed); associating it with MSFT is unsupported, so Partial."
+Model B (Claude),"Paul Tudor Jones made an $8B bet on small-cap chaos",Yes,"news CSV 2026-05-23: 'Paul Tudor Jones makes $8 billion bet on small-cap chaos'","Amount and fact match the headline verbatim (note: a broad-market headline, only loosely related to the five semiconductor names)."

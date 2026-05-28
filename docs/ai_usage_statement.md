@@ -11,7 +11,7 @@ We used the following AI tools during this project:
 1. **ChatGPT** — to help brainstorm the project scope, refine the PRD, design the
    evaluation framework, and clarify course requirements.
 
-2. **Claude Code** — to help generate the initial project structure, draft Python modules,
+2. **Claude** — to help generate the initial project structure, draft Python modules,
    and debug code. We manually reviewed all generated code, tested the notebook on real
    tickers, verified that API keys were not hard-coded, and confirmed that outputs were
    based on real market data and news.
@@ -59,3 +59,19 @@ We used the following AI tools during this project:
 We do not treat AI-generated analysis as source truth. All financial claims in our
 evaluation were checked against the input data where possible. The tool explicitly
 instructs the LLMs to use cautious language and flag limited evidence.
+
+---
+
+## Paid Services and Cost
+
+The project calls two paid LLM APIs as its core functionality:
+
+| Provider | Model | Role | Approximate cost |
+|----------|-------|------|------------------|
+| OpenAI | `gpt-4o-mini` | Model A (morning note) | well under $1 total |
+| Anthropic | `claude-haiku-4-5-20251001` | Model B (morning note) | well under $1 total |
+
+Both are low-cost models and each note is a single short request. Across all of our
+development and evaluation runs the combined spend was a fraction of a dollar — far below
+the $50-per-team threshold that would require instructor approval. Market data (yfinance)
+and the news fallback (`data/sample_news.csv`) are free; NewsAPI offers a free tier.

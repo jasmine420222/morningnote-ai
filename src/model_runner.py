@@ -136,12 +136,17 @@ def run_anthropic_model(prompt: str, model_name: str = "claude-haiku-4-5-2025100
 
     # Step 3: Send the prompt to Claude
     # Anthropic's API is slightly different from OpenAI:
-    #   - max_tokens: we must tell Claude the maximum reply length
-    #     1024 tokens ≈ about 750 words, enough for a morning note
+    #   - max_tokens: we must tell Claude the maximum reply length.
+    #     The full 8-section morning note needs room — 1024 tokens truncated
+    #     the note mid-way, so we allow up to 2048 (≈1500 words) to match the
+    #     length GPT produces. This keeps the two-model comparison fair.
     #   - messages: same idea as OpenAI — one user message with our prompt
+    # temperature=0.3 matches the OpenAI call so both models run at the same
+    # creativity setting — keeping the two-model comparison fair.
     message = client.messages.create(
         model=model_name,
-        max_tokens=1024,
+        max_tokens=2048,
+        temperature=0.3,
         messages=[
             {"role": "user", "content": prompt}
         ],
