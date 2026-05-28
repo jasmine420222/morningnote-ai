@@ -86,10 +86,16 @@ streamlit run app.py
 
 | Sector | Tickers |
 |--------|---------|
-| AI & Semiconductors | NVDA, AMD, AVGO, TSM, ASML |
-| Big Tech | AAPL, MSFT, GOOGL, AMZN, META |
-| Banking | JPM, BAC, WFC, C, GS |
-| Energy | XOM, CVX, COP, SLB, EOG |
+| AI & Semiconductors | NVDA, GOOGL, MSFT, AMD, AVGO |
+| Big Tech | AAPL, MSFT, AMZN, META, NFLX |
+| Financial Services | JPM, BRK-B, V, MA, BAC |
+| Healthcare & Pharma | LLY, JNJ, ABBV, UNH, ABT |
+| Energy | XOM, CVX, SHEL, TTE, COP |
+| Consumer Discretionary | AMZN, TSLA, HD, TM, BABA |
+| Consumer Staples | WMT, COST, PG, KO, PEP |
+| Industrials & Defense | CAT, HON, UNP, RTX, LMT |
+| Utilities & Clean Energy | NEE, SO, DUK, AEP, D |
+| Real Estate (REITs) | PLD, AMT, EQIX, SPG, CCI |
 
 ## Models Used
 

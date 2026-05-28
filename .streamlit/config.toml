@@ -1,0 +1,10 @@
+# Streamlit theme — "Bloomberg terminal" look: deep navy + gold accents.
+# Applied automatically when running `streamlit run app.py` from the repo root.
+
+[theme]
+base                    = "light"
+primaryColor            = "#1a73e8"
+backgroundColor         = "#ffffff"
+secondaryBackgroundColor= "#f5f5f5"
+textColor               = "#111111"
+font                    = "sans serif"

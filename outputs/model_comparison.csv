@@ -1,7 +1,8 @@
 dimension,model_a_score,model_b_score,notes
-clarity,,,"Score 1-5: 1=poor, 5=excellent"
-financial_relevance,,,
-groundedness,,,
-conciseness,,,
-risk_awareness,,,
-usefulness,,,
+clarity,5,4,"GPT is concise and scannable; Claude is well-organized (Leaders/Laggards split, confidence tiers) but denser and longer to read."
+financial_relevance,4,5,"Both cover indices, all five names, themes, earnings, and risks; Claude adds trading volume, the 10Y yield, and institutional flows for broader coverage."
+groundedness,4,5,"Claude cites specific named headlines and explicitly separates fact from speculation (High/Medium/Low confidence tiers), giving more traceable grounding; GPT is cautious but makes fewer, vaguer references."
+conciseness,5,3,"GPT (~3.1k chars) is appropriately brief for a morning note; Claude (~6.7k chars) is over twice as long with some repetition across themes and risks."
+risk_awareness,3,5,"Claude is clearly stronger: 5 specific risks, High/Medium/Low confidence tiers, and an explicit not-investment-advice disclaimer; GPT's risks are generic and it carries no disclaimer."
+usefulness,4,5,"For our use case the richer data and actionable detail (volume, price levels, specific catalysts) make Claude more useful; GPT's brevity is good but thinner."
+TOTAL,25,27,"Model B (Claude Haiku) = 27, Model A (GPT-4o-mini) = 25 — Claude preferred overall. Although GPT is more concise and easier to scan, we judged Claude better on balance because its information richness and data depth (specific cited headlines, volume, risk detail) matter most for our use case. GPT remains the better choice when speed/brevity is the priority."

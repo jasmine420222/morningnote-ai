@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/opt/anaconda3/bin/python -c \"import yfinance, pandas, openai, anthropic, dotenv, streamlit; print\\('✅ 全部就绪'\\); print\\('yfinance', yfinance.__version__\\); print\\('streamlit', streamlit.__version__\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(/opt/anaconda3/bin/python /tmp/regen_notes.py)",
+      "Bash(NEWSAPI_KEY= /opt/anaconda3/bin/python /tmp/regen_notes.py)",
+      "Bash(/opt/anaconda3/bin/python -c ' *)",
+      "Bash(grep -rin \"cost\\\\|\\\\$.*month\\\\|approximate\\\\|paid\\\\|pricing\" README.md docs/writeup.md docs/ai_usage_statement.md)",
+      "Bash(/opt/anaconda3/bin/python -c \"import markdown; print\\('markdown', markdown.__version__\\)\")",
+      "Bash(/opt/anaconda3/bin/python /tmp/build_writeup_html.py)"
+    ]
+  }
+}
